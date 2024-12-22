@@ -1,37 +1,50 @@
 const express = require('express');
 const cors = require('cors');
-const axios = require('axios');
+
 const app = express();
+const port = process.env.PORT || 3000;
 
-// Configurações básicas
-app.use(cors());
+// Middleware
 app.use(express.json());
+app.use(cors());
 
-// Rota para receber dados do Bubble e enviar para Wix
-app.post('/webhook', async (req, res) => {
+// Rota de teste
+app.get('/', (req, res) => {
+    res.json({ status: 'Servidor Bridge Bubble-Wix está rodando!' });
+});
+
+// Rota para receber dados do Bubble
+app.post('/forward-to-wix', async (req, res) => {
     try {
-        const { texto } = req.body;
+        const { text } = req.body;
         
-        // Log para debug
-        console.log('Texto recebido:', texto);
-        
-        // Aqui você implementará a chamada para o Wix
-        // const respostaWix = await axios.post('SUA_URL_WIX', { texto });
-        
+        if (!text) {
+            return res.status(400).json({
+                success: false,
+                message: 'O texto é obrigatório'
+            });
+        }
+
+        console.log('Texto recebido do Bubble:', {
+            preview: text.substring(0, 100) + '...'
+        });
+
+        // Por enquanto apenas retorna sucesso
         res.json({
             success: true,
-            message: 'Dados recebidos com sucesso'
+            message: 'Texto recebido com sucesso'
         });
+
     } catch (error) {
         console.error('Erro:', error);
         res.status(500).json({
             success: false,
+            message: 'Erro interno do servidor',
             error: error.message
         });
     }
 });
 
-const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Servidor rodando na porta ${port}`);
 });
